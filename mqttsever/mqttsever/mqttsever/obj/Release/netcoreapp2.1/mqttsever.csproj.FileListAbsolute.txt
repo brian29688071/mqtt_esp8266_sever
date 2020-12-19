@@ -1,0 +1,11 @@
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\bin\Release\netcoreapp2.1\mqttsever.deps.json
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\bin\Release\netcoreapp2.1\mqttsever.runtimeconfig.json
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\bin\Release\netcoreapp2.1\mqttsever.runtimeconfig.dev.json
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\bin\Release\netcoreapp2.1\mqttsever.dll
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\bin\Release\netcoreapp2.1\mqttsever.pdb
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\obj\Release\netcoreapp2.1\mqttsever.csprojAssemblyReference.cache
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\obj\Release\netcoreapp2.1\mqttsever.csproj.CoreCompileInputs.cache
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\obj\Release\netcoreapp2.1\mqttsever.AssemblyInfoInputs.cache
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\obj\Release\netcoreapp2.1\mqttsever.AssemblyInfo.cs
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\obj\Release\netcoreapp2.1\mqttsever.dll
+D:\ardunio\mqtt_esp8266\mqttsever\mqttsever\mqttsever\obj\Release\netcoreapp2.1\mqttsever.pdb
