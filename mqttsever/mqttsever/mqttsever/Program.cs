@@ -14,15 +14,10 @@ namespace MqttServerTest
     {
         private static MqttServer mqttServer = null;
         private static float data_frame_time_long;
-<<<<<<< HEAD
-        private static string file_name="", can_next="";
+        private static string file_name="", can_next="", can_next_part="";
         private static Boolean pause = false,is_end=false;
         private static int sam,bit,data_frame_long,total_time,id3_l,now_play_s=1, total_data_package;//採樣率,比特率,幀長,總時常,id3標籤長度
-=======
-        private static string file_name="",can_next_part="";
         static  Boolean bplay = true;
-        private static int sam,bit,data_frame_long,total_time,id3_l,now_play_s=1;//採樣率,比特率,幀長,總時常,id3標籤長度
->>>>>>> master
         static void Main(string[] args)
         {
             
@@ -51,47 +46,24 @@ namespace MqttServerTest
                     case "publish":
                         {
                             string paylaod = Console.ReadLine().ToLower().Trim(); ;
-<<<<<<< HEAD
                             var applicationMessage = 
                                 new MQTTnet.Core.MqttApplicationMessage(
                                     "mynowplay", Encoding.UTF8.GetBytes(paylaod), 0, false);
-=======
-                            var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("can_next_part", Encoding.UTF8.GetBytes(paylaod), 0, false);
->>>>>>> master
+                            applicationMessage = new MQTTnet.Core.MqttApplicationMessage("can_next_part", Encoding.UTF8.GetBytes(paylaod), 0, false);
                             mqttServer.Publish(applicationMessage);
                             Console.WriteLine("發布成功");
                             break;
                         }
-                    case "song":
+                    case "play":
                         {
-<<<<<<< HEAD
                             Thread play = null;
                             play = new Thread(playing);
                             what_file_load();
                             play.Start();
-=======
-                            what_file_load();
-                            Thread now_play=new Thread(play);
-                            if (file_name == "exit.mp3")
-                            {
-                                
-                            }
-                            else if(file_name=="play.mp3")
-                            {
-                                what_file_load();
-                                now_play.Start();
-                            }
-                            else if (file_name == "pause.mp3")
-                            {
-                                bplay = false;
-                                Console.WriteLine("應該暫停");
-                            }
->>>>>>> master
                             break;
                         }
                     case "pause":
                         {
-<<<<<<< HEAD
                             pause = !pause;
                             break;
                         }
@@ -99,9 +71,6 @@ namespace MqttServerTest
                         {
                             var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("can_next", Encoding.UTF8.GetBytes(""), 0, false);
                             mqttServer.Publish(applicationMessage);
-=======
-                           
->>>>>>> master
                             break;
                         }
                     /*case "":
@@ -189,7 +158,6 @@ namespace MqttServerTest
             }
             else if (file_name == "exit.mp3")
             {
-<<<<<<< HEAD
                 Console.WriteLine("取消");
                 file_name = "";
             }
@@ -202,47 +170,6 @@ namespace MqttServerTest
             if (Frame_position.Count != 0)
             {
                 if (bit > 192)
-=======
-                Console.WriteLine("結束選擇");
-            }
-        }
-        public static List<int> mp3fileread()//所有的幀判斷部分都在這
-        {
-            
-                List<int> Frame_position = new List<int>();
-                string filepath = @"D:\hfs\" + file_name;
-                FileStream fs = new FileStream(filepath, FileMode.Open);
-                byte[] byDataValue = new byte[10];//id3標籤判斷用陣列
-                byte[] h_byDataValue = new byte[4];//數據幀頭
-                fs.Seek(0, SeekOrigin.Begin);
-                fs.Read(byDataValue, 0, 10);
-                fs.Seek(0, SeekOrigin.Begin);
-                int dataframe_head_position = id3_is_alive(byDataValue);//找到幀頭
-                                                                        //Console.WriteLine(ByteArrayToString(byDataValue));
-                fs.Seek(dataframe_head_position, SeekOrigin.Begin);
-                fs.Read(h_byDataValue, 0, 4);
-                int[] dateframelong = dataframelong(h_byDataValue);
-                //Console.WriteLine(ByteArrayToString(h_byDataValue));
-                Console.WriteLine("數據幀大小:" + dateframelong[0]);
-                data_frame_long = dateframelong[0];
-                //Console.WriteLine(ByteArrayToString(dataframe(fs, dataframe_head_position, dateframelong)));
-                //建立一個以時間為主的跳耀方法，及傳輸檔案為mp3給8266 每幀為26ms
-                //以下為對檔案的帧進行定位存在一個
-                byte[] all_file_load = new byte[fs.Length];//讀取整個檔案
-                byte[] byte_check = new byte[4];//讀幀頭前4個byte
-                string[] Frame_head_1 = new string[] {//-----------------第1 2byte
-                "11111111111",//同步信息 0
-                "11",//版本 1
-                "01",//Layer 2
-                "0","1",//crc 3~4 
-                };
-                string[] Frame_head_2 = new string[] {//-----------------第3byte
-                //採樣與位率為恆定
-                "0","1",//幀常調整
-                "0",//保留字
-                };
-                string[] Frame_head_3 = new string[]
->>>>>>> master
                 {
                     int package = 1;//之後用來控制傳輸量的 每次傳輸幾秒
                     int one_second_need_frame = (int)((float)1 / data_frame_time_long);
@@ -309,13 +236,14 @@ namespace MqttServerTest
                             }
                         }
                     }*/
-                    
-                    
-                    
+
+
+
                 }
             }
             Console.WriteLine("end");
             fs.Dispose();
+            Console.WriteLine("結束選擇");
         }
         private static List<int> mp3fileread()
         {
@@ -454,10 +382,6 @@ namespace MqttServerTest
                 //把存取方式通通改為固定值用seek方式取值
                 fs.Dispose();
                 return Frame_position;
-<<<<<<< HEAD
-=======
-            
->>>>>>> master
         }
         public static byte[] transfer_data(List<int> Frame_position, FileStream fs, int now_play_s, int one_second_need_frame)
         {     
@@ -787,17 +711,14 @@ namespace MqttServerTest
         }
         private static void MqttServer_ApplicationMessageReceived(object sender, MqttApplicationMessageReceivedEventArgs e)
         {
-<<<<<<< HEAD
             //if(e.ApplicationMessage.Topic != "mp3_frame_byte")
                 //Console.WriteLine($"客戶端[{e.ClientId}]>> 主題：{e.ApplicationMessage.Topic} 負荷：{Encoding.UTF8.GetString(e.ApplicationMessage.Payload)} Qos：{e.ApplicationMessage.QualityOfServiceLevel } 保留：{e.ApplicationMessage.Retain}");
             if (e.ApplicationMessage.Topic == "can_next")
                 can_next = "can_next";
-=======
             if(e.ApplicationMessage.Topic != "mp3_frame_byte")
                 Console.WriteLine($"客戶端[{e.ClientId}]>> 主題：{e.ApplicationMessage.Topic} 負荷：{Encoding.UTF8.GetString(e.ApplicationMessage.Payload)} Qos：{e.ApplicationMessage.QualityOfServiceLevel } 保留：{e.ApplicationMessage.Retain}");
             if (e.ApplicationMessage.Topic == "can_next_part")
                 can_next_part = "can_next_part";
->>>>>>> master
         }
     }
 }
