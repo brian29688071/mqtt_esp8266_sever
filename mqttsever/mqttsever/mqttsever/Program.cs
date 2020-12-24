@@ -86,66 +86,6 @@ namespace MqttServerTest
                 }
             }
         }
-        private static void play()
-        {
-            List<int> Frame_position = mp3fileread();
-            string filepath = @"D:\hfs\" + file_name;
-            FileStream fs = new FileStream(filepath, FileMode.Open);
-            if (Frame_position.Count != 0)
-            {
-                if (bit > 192)
-                {
-                    int presecond_pakeage = 2;//之後用來控制傳輸量的
-                    int one_second_need_frame = (int)((float)1 / data_frame_time_long);
-                    for (; now_play_s <= total_time; now_play_s++)
-                    {
-                        while (bplay)
-                        {
-                            var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("mp3_frame_byte", transfer_data(Frame_position, fs, now_play_s, one_second_need_frame), MqttQualityOfServiceLevel.ExactlyOnce, false);
-                            mqttServer.Publish(applicationMessage);
-                            while (now_play_s % presecond_pakeage == 0)
-                            {
-                                if (can_next_part == "can_next_part")
-                                {
-                                    can_next_part = "";
-                                    Console.WriteLine("下一份");
-                                    Console.WriteLine(bplay);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    var end_message = new MQTTnet.Core.MqttApplicationMessage("play", Encoding.UTF8.GetBytes("end_play"), 0, false);
-                    mqttServer.Publish(end_message);
-                }
-                else if (bit <= 128)
-                {
-
-                    int presecond_pakeage = 4;//之後用來控制傳輸量的
-                    int one_second_need_frame = (int)((float)1 / data_frame_time_long);           
-                    for (; now_play_s <= total_time; now_play_s++)
-                    {
-                        while (bplay)
-                        { 
-                            var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("mp3_frame_byte", transfer_data(Frame_position, fs, now_play_s, one_second_need_frame), MqttQualityOfServiceLevel.ExactlyOnce, false);
-                            mqttServer.Publish(applicationMessage);
-                            while (now_play_s % presecond_pakeage == 0)
-                            {
-                                if (can_next_part == "can_next_part")
-                                {
-                                    can_next_part = "";
-                                    Console.WriteLine("下一份");
-                                    Console.WriteLine(bplay);
-                                    break;
-                                }
-                            }
-                        }
-                    }    
-                    var end_message = new MQTTnet.Core.MqttApplicationMessage("play", Encoding.UTF8.GetBytes("end_play"),MqttQualityOfServiceLevel.ExactlyOnce, false);
-                    mqttServer.Publish(end_message);
-                }
-            }
-        }
         private static void what_file_load()
         {
             file_name = Console.ReadLine().ToLower().Trim();
@@ -208,7 +148,7 @@ namespace MqttServerTest
                             Thread.Sleep(50);
                         var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("mp3_frame_byte", transfer_data(Frame_position, fs, now_play_s, one_second_need_frame), 0, false);
                         mqttServer.Publish(applicationMessage);
-                        /*while ((now_play_s % package) == 0)
+                        while ((now_play_s % package) == 0)
                         {
                             if (can_next == "can_next")
                             {
@@ -216,7 +156,7 @@ namespace MqttServerTest
                                 Console.WriteLine("下一個");
                                 break;
                             }
-                        }*/
+                        }
                     }
                     /*int package = 1;//之後用來控制傳輸量的 每次傳輸幾秒
                     int one_second_need_frame = (int)((float)1 / data_frame_time_long);
@@ -717,8 +657,6 @@ namespace MqttServerTest
                 can_next = "can_next";
             if(e.ApplicationMessage.Topic != "mp3_frame_byte")
                 Console.WriteLine($"客戶端[{e.ClientId}]>> 主題：{e.ApplicationMessage.Topic} 負荷：{Encoding.UTF8.GetString(e.ApplicationMessage.Payload)} Qos：{e.ApplicationMessage.QualityOfServiceLevel } 保留：{e.ApplicationMessage.Retain}");
-            if (e.ApplicationMessage.Topic == "can_next_part")
-                can_next_part = "can_next_part";
         }
     }
 }
