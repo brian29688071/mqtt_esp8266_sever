@@ -17,7 +17,7 @@ namespace MqttServerTest
         private static string file_name="", can_next="", can_next_part="";
         private static Boolean pause = false,is_end=false;
         private static int sam,bit,data_frame_long,total_time,id3_l,now_play_s=1, total_data_package;//採樣率,比特率,幀長,總時常,id3標籤長度
-        static  Boolean bplay = true;
+        private static byte order=0;
         static void Main(string[] args)
         {
             
@@ -46,10 +46,8 @@ namespace MqttServerTest
                     case "publish":
                         {
                             string paylaod = Console.ReadLine().ToLower().Trim(); ;
-                            var applicationMessage = 
-                                new MQTTnet.Core.MqttApplicationMessage(
-                                    "mynowplay", Encoding.UTF8.GetBytes(paylaod), 0, false);
-                            applicationMessage = new MQTTnet.Core.MqttApplicationMessage("can_next_part", Encoding.UTF8.GetBytes(paylaod), 0, false);
+                            //var applicationMessage = new MQTTnet.Core.MqttApplicationMessage( "mynowplay", test002, 0, false);
+                            var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("mynowplay", Encoding.UTF8.GetBytes(paylaod), 0, false);
                             mqttServer.Publish(applicationMessage);
                             Console.WriteLine("發布成功");
                             break;
@@ -79,7 +77,18 @@ namespace MqttServerTest
                         }*/
                     default:
                         {
-                            Console.WriteLine($"命令[{inputString}]無效！");
+                            //Console.WriteLine($"命令[{inputString}]無效！");
+                            byte[] b = {0};
+                            while (b[0] != 255)
+                            {
+                                //string paylaod = Console.ReadLine().ToLower().Trim(); ;
+                                //var applicationMessage = new MQTTnet.Core.MqttApplicationMessage( "mynowplay", test002, 0, false);
+                                var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("order",b, MqttQualityOfServiceLevel.AtMostOnce, false);
+                                mqttServer.Publish(applicationMessage);
+                                Console.WriteLine("發布成功");
+                                b[0]++;
+                            }
+                            b[0] = 0;
                             break;
                         }
 
@@ -135,7 +144,7 @@ namespace MqttServerTest
                 else
                 {
                     int package = 1;//之後用來控制傳輸量的 每次傳輸幾秒
-                    int one_second_need_frame = 20;
+                    int one_second_need_frame =5;
                     if (Frame_position.Count % one_second_need_frame != 0)
                     {
                         total_data_package = Frame_position.Count / one_second_need_frame + 1;
@@ -146,7 +155,7 @@ namespace MqttServerTest
                     {
                         while (pause)
                             Thread.Sleep(50);
-                        var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("mp3_frame_byte", transfer_data(Frame_position, fs, now_play_s, one_second_need_frame), 0, false);
+                        var applicationMessage = new MQTTnet.Core.MqttApplicationMessage("mp3_frame_byte", transfer_data(Frame_position, fs, now_play_s, one_second_need_frame), MqttQualityOfServiceLevel.AtMostOnce, false);
                         mqttServer.Publish(applicationMessage);
                         while ((now_play_s % package) == 0)
                         {
@@ -176,9 +185,6 @@ namespace MqttServerTest
                             }
                         }
                     }*/
-
-
-
                 }
             }
             Console.WriteLine("end");
@@ -197,7 +203,7 @@ namespace MqttServerTest
             fs.Read(byDataValue, 0, 10);
             fs.Seek(0, SeekOrigin.Begin);
             int dataframe_head_position = id3_is_alive(byDataValue);//找到幀頭
-                                                                    //Console.WriteLine(ByteArrayToString(byDataValue));
+            //Console.WriteLine(ByteArrayToString(byDataValue));
             fs.Seek(dataframe_head_position, SeekOrigin.Begin);
             fs.Read(h_byDataValue, 0, 4);
             int[] dateframelong = dataframelong(h_byDataValue);
@@ -206,7 +212,7 @@ namespace MqttServerTest
             data_frame_long = dateframelong[0];
             //Console.WriteLine(ByteArrayToString(dataframe(fs, dataframe_head_position, dateframelong)));
             //建立一個以時間為主的跳耀方法，及傳輸檔案為mp3給8266 每幀為26ms
-            //以下為對檔案的帧進行定位存在一個
+            //以下為對檔案的帧進行定位
             byte[] all_file_load = new byte[fs.Length];//讀取整個檔案
             byte[] byte_check = new byte[4];//讀幀頭前4個byte
             string[] Frame_head_1 = new string[] {//-----------------第1 2byte
@@ -328,20 +334,15 @@ namespace MqttServerTest
             fs.Seek(Frame_position[now_play_s * one_second_need_frame - one_second_need_frame], SeekOrigin.Begin);
             if (now_play_s * one_second_need_frame< Frame_position.Count)
             {
-                byte[] tansfer_datapage=new byte[Frame_position[now_play_s * one_second_need_frame]-Frame_position[now_play_s * one_second_need_frame-one_second_need_frame]];//取1秒的長度 例如一秒為38幀就第38幀的頭減第0個幀
-                fs.Read(tansfer_datapage,0, Frame_position[now_play_s * one_second_need_frame] - Frame_position[now_play_s * one_second_need_frame - one_second_need_frame]);//一秒的byte陣列
-                return tansfer_datapage;
+                byte[] tansfer_datapage=new byte[Frame_position[now_play_s * one_second_need_frame]-Frame_position[now_play_s * one_second_need_frame-one_second_need_frame]+1];//取1秒的長度 例如一秒為38幀就第38幀的頭減第0個幀
+                tansfer_datapage[0] = order;
+                Console.WriteLine(order);
+                order++;
+                fs.Read(tansfer_datapage,1, Frame_position[now_play_s * one_second_need_frame] - Frame_position[now_play_s * one_second_need_frame - one_second_need_frame]);//一秒的byte陣列                return tansfer_datapage;
             }
             byte[] no_data = { 0 };
             return no_data;
         }
-        public static byte[] dataframe(FileStream fs, int dataframebegin_position,int dateframelong)
-        {
-            byte[] dataframe=new byte[dateframelong];
-            fs.Seek(dataframebegin_position, SeekOrigin.Begin);
-            fs.Read(dataframe, 0, dateframelong);
-            return dataframe;
-        }//讀頭
         public static byte[] dataframe_head(FileStream fs, int dataframebegin_position, int dateframelong)
         {
             byte[] dataframe = new byte[2];
@@ -373,7 +374,6 @@ namespace MqttServerTest
                 //Console.WriteLine("id3存在");
                 id3_l =total_size+10;
                 Console.WriteLine("id3標籤大小:" + id3_l);
-
                 return id3_l;
             }
             else {
@@ -601,11 +601,19 @@ namespace MqttServerTest
         }
         public static byte[] StringToByteArray(string hex)//string轉bit
         {
+            if (hex != "0")
+            { 
             int NumberChars = hex.Length;
             byte[] bytes = new byte[NumberChars / 2];
             for (int i = 0; i < NumberChars; i += 2)
                 bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
-            return bytes;
+                return bytes;
+            }
+            else
+            {
+                byte[] bytes = {0};
+                return bytes;
+            }
         }
         private static void StartMqttServer()
         {
@@ -656,7 +664,10 @@ namespace MqttServerTest
             if (e.ApplicationMessage.Topic == "can_next")
                 can_next = "can_next";
             if(e.ApplicationMessage.Topic != "mp3_frame_byte")
-                Console.WriteLine($"客戶端[{e.ClientId}]>> 主題：{e.ApplicationMessage.Topic} 負荷：{Encoding.UTF8.GetString(e.ApplicationMessage.Payload)} Qos：{e.ApplicationMessage.QualityOfServiceLevel } 保留：{e.ApplicationMessage.Retain}");
+                if (e.ApplicationMessage.Topic != "order")
+                    Console.WriteLine($"客戶端[{e.ClientId}]>> 主題：{e.ApplicationMessage.Topic} 負荷：{Encoding.UTF8.GetString(e.ApplicationMessage.Payload)} Qos：{e.ApplicationMessage.QualityOfServiceLevel } 保留：{e.ApplicationMessage.Retain}");
+            if (e.ApplicationMessage.Topic == "order")
+                Console.WriteLine($"客戶端[{e.ClientId}]>> 主題：{e.ApplicationMessage.Topic} 負荷：{ByteArrayToString(e.ApplicationMessage.Payload)} Qos：{e.ApplicationMessage.QualityOfServiceLevel } 保留：{e.ApplicationMessage.Retain}");
         }
     }
 }
